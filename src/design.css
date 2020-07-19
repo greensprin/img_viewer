@@ -1,0 +1,27 @@
+.img_box {
+  image-rendering: pixelated;
+}
+
+#pos_txt {
+  background-color: rgba(255,255,255,0.3);
+  font-weight: bold;
+  position: fixed;
+  bottom: 0;
+  right:  10px;
+}
+
+#col_txt {
+  background-color: rgba(255,255,255,0.3);
+  font-weight: bold;
+  position: fixed;
+  bottom: 60px;
+  right:  10px;
+}
+
+#zoom_txt {
+  background-color: rgba(255,255,255,0.3);
+  font-weight: bold;
+  position: fixed;
+  bottom: 30px;
+  right:  10px;
+}

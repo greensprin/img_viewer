@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Image Viewer</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="design.css">
+</head>
+
+<body style="overflow: hidden;" onmousewheel="zoom()">
+
+    <div id="mybox1" class="mybox" draggable="true">
+      <img id="myimg" class="img_box">
+      <!-- <canvas id="mycanvas"></canvas> -->
+    </div>
+
+    <div>
+      <p id="pos_txt"></p>
+      <p id="col_txt"></p>
+      <p id="zoom_txt"></p>
+    </div>
+
+    <script type="text/javascript" src="viewer.js"></script>
+</body>
+
+</html>
