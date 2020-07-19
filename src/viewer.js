@@ -49,12 +49,10 @@ function zoom() {
   swt=event.wheelDelta;
 
   // zoom倍率を上げる
-  var                   scale_up = 1;
-  if      (size >= 10)  scale_up = 10;
-  else if (size >= 100) scale_up = 100;
+  var scale_up = (size / 10) / 2;
 
-  if   (swt<=-120 && size>0.2) { size=size-(0.1 * scale_up); }
-  else                         { size=size+(0.1 * scale_up); }
+  if   (swt<=-120 && size>0.2) { size=size-(0.1 + scale_up); }
+  else                         { size=size+(0.1 + scale_up); }
 
   set_zoom();
   draw_canvas_image();
