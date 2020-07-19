@@ -24,3 +24,6 @@ https://ja.javascript.info/mouse-drag-and-drop
 
 - マウスポインタ
 https://www.yoheim.net/blog.php?q=20120409
+
+- canvasでの画像移動
+https://qiita.com/kyrieleison/items/26fcfb3a1d94bc92c596

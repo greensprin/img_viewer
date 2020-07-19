@@ -1,81 +1,124 @@
-document.ondragover = document.ondrop = function(e) {
-  e.preventDefault();
-}
-
-var img = document.getElementById("myimg");
-
-var canvas = document.createElement("canvas");
-
+// get or create Element ///////////////////////////////////////////////////////
+var img      = document.createElement("img");
+var canvas   = document.getElementById("mycanvas");
 var zoom_txt = document.getElementById("zoom_txt");
 var pos_txt  = document.getElementById("pos_txt");
 var col_txt  = document.getElementById("col_txt");
 
-document.addEventListener("drop", function(e) {
+// addEventListener ////////////////////////////////////////////////////////////
+// document
+document.ondragover = document.ondrop = function(e) { e.preventDefault(); }
+document.addEventListener("drop", doc_drop, false);
+document.addEventListener("keypress", key_zoom, false);
+// canvas
+canvas.addEventListener("mousedown" , mouse_down    , false);
+canvas.addEventListener("mouseup"   , mouse_up      , false);
+canvas.addEventListener("mousemove" , get_image_info, false);
+
+// init var ////////////////////////////////////////////////////////////////////
+var size = 1.0
+var mouse_down_flg = 0;
+var objX = 0
+var objY = 0
+var relX, relY;
+var ctx = canvas.getContext("2d");
+
+// function ////////////////////////////////////////////////////////////////////
+function doc_drop(e) {
   img.src = e.dataTransfer.files[0].path
 
   img.onload = function() {
-    canvas.width  = img.width;
-    canvas.height = img.height;
-
-    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    size = 1.0;
+    img.style.zoom=size;
+    zoom_txt.textContent = String(Math.floor(size * 100 + 0.5)) + "%";
+    draw_canvas_image();
   }
-}, false);
+}
 
-size = 1.0;
+function draw_canvas_image() {
+  canvas.width  = screen.width;
+  canvas.height = screen.height;
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.scale(size, size);
+  ctx.drawImage(img, objX, objY);
+  ctx.scale(1/size, 1/size);
+}
 
 function zoom() {
   swt=event.wheelDelta;
-  if (swt<=-120 && size>0.2) {
-    size=size-0.1;
-  } else {
-    size=size+0.1;
-  }
+
+  // zoom倍率を上げる
+  var                   scale_up = 1;
+  if      (size >= 10)  scale_up = 10;
+  else if (size >= 100) scale_up = 100;
+
+  if   (swt<=-120 && size>0.2) { size=size-(0.1 * scale_up); }
+  else                         { size=size+(0.1 * scale_up); }
+
+  set_zoom();
+  draw_canvas_image();
+}
+
+function set_zoom() {
   img.style.zoom=size;
-
-  // かなり微妙な実装（zoomときに真ん中に注目したい
-  var ofst = -1;
-  if (swt >= 120) {ofst = 1;};
-
-  moveX = 60 * ofst;
-  moveY = 30 * ofst;
-  scrollBy(moveX, moveY);
-
   zoom_txt.textContent = String(Math.floor(size * 100 + 0.5)) + "%";
 }
 
-document.addEventListener("keypress", function (e) {
+function key_zoom(e) {
   for (var i = 1; i <= 9; i++) {
     if (e.key == String(i)) {
       size = Number(e.key)
-      img.style.zoom = size;
-      zoom_txt.textContent = String(size * 100) + "%";
+      objX = 0; objY = 0;
+      set_zoom();
+      draw_canvas_image();
     }
-  }
-});
-
-mouse_down_flg = 0;
-img.onmousedown = function(e) {
-  mouse_down_flg = 1;
-  mouseX_sta = e.pageX;
-  mouseY_sta = e.pageY;
-
-  img.ondragstart = function() { return false; };
-
-  img.onmouseup = function(e) {
-    mouse_down_flg = 0;
-    mouseX_end = e.pageX;
-    mouseY_end = e.pageY;
-
-    scrollBy(mouseX_sta - mouseX_end, mouseY_sta - mouseY_end);
   }
 }
 
-img.onmousemove = function(e) {
-  pos_txt.textContent = "X: " + String(Math.floor(e.pageX / size)) + " Y: " + String(Math.floor(e.pageY / size));
+function not_proc() {
+  return false;
+}
 
-  var getImageData = canvas.getContext("2d").getImageData(Math.floor(e.pageX / size), Math.floor(e.pageY / size), 1, 1);
+function mouse_up() {
+  mouse_down_flg = 0;
+}
+
+function mouse_down(e) {
+  mouse_down_flg = 1;
+
+  var offsetX = canvas.getBoundingClientRect().left;
+  var offsetY = canvas.getBoundingClientRect().top;
+
+  var x = e.clientX - offsetX;
+  var y = e.clientY - offsetY;
+
+  relX = objX - (x/size);
+  relY = objY - (y/size);
+}
+
+function get_image_info(e) {
+  var offsetX = canvas.getBoundingClientRect().left;
+  var offsetY = canvas.getBoundingClientRect().top;
+
+  var x = e.clientX - offsetX;
+  var y = e.clientY - offsetY;
+
+  var posx = Math.floor(Math.min(Math.max((x/size - objX) , 0), img.width ))
+  var posy = Math.floor(Math.min(Math.max((y/size - objY) , 0), img.height))
+
+  pos_txt.textContent = "X: " + String(posx) + " Y: " + String(posy);
+
+  var getImageData = ctx.getImageData(x, y, 1, 1);
   var R = getImageData.data[0]
   var G = getImageData.data[1]
   var B = getImageData.data[2]
+
   col_txt.textContent = "R: " + String(R) + " G: " + String(G) + " B: " + String(B);
+
+  if (mouse_down_flg == 1) {
+    objX = (x/size) + relX;
+    objY = (y/size) + relY;
+    draw_canvas_image();
+  }
 }
