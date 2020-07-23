@@ -1,10 +1,16 @@
-// get or create Element ///////////////////////////////////////////////////////
+// get Element //////////////////////////////////////////////////////////////////
 var pdiv     = document.getElementById("mybox1")
-var img      = document.createElement("img");
 var canvas   = document.getElementById("mycanvas");
 var zoom_txt = document.getElementById("zoom_txt");
 var pos_txt  = document.getElementById("pos_txt");
 var col_txt  = document.getElementById("col_txt");
+
+// create Element //////////////////////////////////////////////////////////////
+var img = document.createElement("img");
+img.classList.add("imgClass");
+
+var img_div = document.createElement("div");
+img_div.appendChild(img);
 
 // addEventListener ////////////////////////////////////////////////////////////
 // document
@@ -33,38 +39,51 @@ var mouse_down_flg = 0;
 var objX = 0
 var objY = 0
 var relX, relY;
-var ctx = canvas.getContext("2d");
 var timeoutID;
 var win_width  = window.innerWidth;
 var win_height = window.innerHeight;
 
 // function ////////////////////////////////////////////////////////////////////
 function doc_drop(e) {
-  img.src = e.dataTransfer.files[0].path
+  var img_class_list = img_div.getElementsByClassName("imgClass");
 
-  img.style.zoom=size;
-  zoom_txt.textContent = String(Math.floor(size * 100 + 0.5)) + "%";
+  var x = e.clientX;
+  var y = e.clientY;
 
-  img.onload = function() {
-    // size = 1.0;
+  var img_index = Math.floor(x / win_width);
+
+  console.log(img_div);
+  console.log(img_class_list.length);
+  console.log(x, y, img_index);
+
+  img_class_list[img_index].src = e.dataTransfer.files[0].path;
+
+  // img.src = e.dataTransfer.files[0].path
+
+  set_zoom();
+
+  img_class_list[img_index].onload = function() {
     draw_canvas_image();
   }
 }
 
 function draw_canvas_image() {
-  canvas.width  = win_width;
-  canvas.height = win_height;
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.scale(size, size);
-  ctx.drawImage(img, objX, objY);
-  ctx.scale(1/size, 1/size);
+  var num = pdiv.childElementCount;
+  canvases = pdiv.getElementsByClassName("canvas_box");
+  images   = img_div.getElementsByClassName("imgClass");
+  for (var i = 0; i < num; i++) {
+    canvases[i].width  = win_width;
+    canvases[i].height = win_height;
+    var ctx = canvases[i].getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0,0,canvases[i].width,canvases[i].height);
+    ctx.scale(size, size);
+    ctx.drawImage(images[i], objX, objY);
+    ctx.scale(1/size, 1/size);
+  }
 }
 
 function zoom() {
-  var pre_inwid = ((objX / size) + (window.innerWidth  / size)) / 2;
-  var pre_inhei = ((objY / size) + (window.innerHeight / size)) / 2;
-
   swt=event.wheelDelta;
 
   // zoom倍率を上げる
@@ -72,14 +91,6 @@ function zoom() {
 
   if   (swt<=-120 && size>0.2) { size=size-(0.1 + scale_up); }
   else                         { size=size+(0.1 + scale_up); }
-
-  var pos_inwid = ((objX / size) + (window.innerWidth  / size)) / 2;
-  var pos_inhei = ((objY / size) + (window.innerHeight / size)) / 2;
-
-  if (size >= 1.0) {
-    objX = objX + (pos_inwid - pre_inwid);
-    objY = objY + (pos_inhei - pre_inhei);
-  }
 
   set_zoom();
   draw_canvas_image();
@@ -102,8 +113,9 @@ function key_press(e) {
 
   if (e.keyCode == 112) {
     if (pdiv.childElementCount == 2) {
-      var child = document.getElementById("mycanvas2");
-      pdiv.removeChild(child);
+      // remove canvas
+      var childs = document.getElementsByClassName("canvas_box");
+      pdiv.removeChild(childs[1]);
 
       win_width  = innerWidth;
       draw_canvas_image();
@@ -113,13 +125,24 @@ function key_press(e) {
   if (e.keyCode == 113) {
     if (pdiv.childElementCount == 1) {
       console.log("add new canvas")
+      // set win size
+      win_width  = innerWidth  / 2;
+
+      // add new canvas
       var child = document.createElement("canvas");
-      child.setAttribute("id", "mycanvas2");
-      child.width  = innerWidth  / 2;
-      child.height = innerHeight / 2;
+      child.setAttribute("class", "canvas_box");
+      child.width  = win_width;
+      child.height = win_height;
+      child.addEventListener("mousedown" , mouse_down    , false);
+      child.addEventListener("mouseup"   , mouse_up      , false);
+      child.addEventListener("mousemove" , get_image_info, false);
       pdiv.appendChild(child);
 
-      win_width  = innerWidth  / 2;
+      // add new img
+      var new_img = document.createElement("img");
+      new_img.classList.add("imgClass");
+      img_div.appendChild(new_img);
+
       draw_canvas_image();
     }
   }
@@ -158,6 +181,7 @@ function get_image_info(e) {
 
   pos_txt.textContent = "X: " + String(posx) + " Y: " + String(posy);
 
+  var ctx = canvas.getContext("2d");
   var getImageData = ctx.getImageData(x, y, 1, 1);
   var R = getImageData.data[0]
   var G = getImageData.data[1]
