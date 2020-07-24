@@ -27,8 +27,8 @@ window.addEventListener("resize", function(e) {
   clearTimeout(timeoutID)
   
   timeoutID = setTimeout( function() {
-    var child_cnt = pdiv.childElementCount;
-    win_width  = window.innerWidth  / child_cnt;
+    var child_num = pdiv.childElementCount;
+    win_width  = window.innerWidth  / child_num;
     draw_canvas_image();
   }, 100);
 } , false);
@@ -45,40 +45,36 @@ var win_height = window.innerHeight;
 
 // function ////////////////////////////////////////////////////////////////////
 function doc_drop(e) {
-  var img_class_list = img_div.getElementsByClassName("imgClass");
+  var img_child = img_div.getElementsByClassName("imgClass");
 
   var x = e.clientX;
   var y = e.clientY;
 
   var img_index = Math.floor(x / win_width);
 
-  console.log(img_div);
-  console.log(img_class_list.length);
-  console.log(x, y, img_index);
-
-  img_class_list[img_index].src = e.dataTransfer.files[0].path;
+  img_child[img_index].src = e.dataTransfer.files[0].path;
 
   // img.src = e.dataTransfer.files[0].path
 
   set_zoom();
 
-  img_class_list[img_index].onload = function() {
+  img_child[img_index].onload = function() {
     draw_canvas_image();
   }
 }
 
 function draw_canvas_image() {
   var num = pdiv.childElementCount;
-  canvases = pdiv.getElementsByClassName("canvas_box");
-  images   = img_div.getElementsByClassName("imgClass");
+  canvas_child = pdiv.getElementsByClassName("canvas_box");
+  img_child   = img_div.getElementsByClassName("imgClass");
   for (var i = 0; i < num; i++) {
-    canvases[i].width  = win_width;
-    canvases[i].height = win_height;
-    var ctx = canvases[i].getContext("2d");
+    canvas_child[i].width  = win_width;
+    canvas_child[i].height = win_height;
+    var ctx = canvas_child[i].getContext("2d");
     ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0,0,canvases[i].width,canvases[i].height);
+    ctx.clearRect(0,0,canvas_child[i].width,canvas_child[i].height);
     ctx.scale(size, size);
-    ctx.drawImage(images[i], objX, objY);
+    ctx.drawImage(img_child[i], objX, objY);
     ctx.scale(1/size, 1/size);
   }
 }
@@ -114,8 +110,8 @@ function key_press(e) {
   if (e.keyCode == 112) {
     if (pdiv.childElementCount == 2) {
       // remove canvas
-      var childs = document.getElementsByClassName("canvas_box");
-      pdiv.removeChild(childs[1]);
+      var canvas_child = document.getElementsByClassName("canvas_box");
+      pdiv.removeChild(canvas_child[1]);
 
       win_width  = innerWidth;
       draw_canvas_image();
@@ -129,19 +125,19 @@ function key_press(e) {
       win_width  = innerWidth  / 2;
 
       // add new canvas
-      var child = document.createElement("canvas");
-      child.setAttribute("class", "canvas_box");
-      child.width  = win_width;
-      child.height = win_height;
-      child.addEventListener("mousedown" , mouse_down    , false);
-      child.addEventListener("mouseup"   , mouse_up      , false);
-      child.addEventListener("mousemove" , get_image_info, false);
-      pdiv.appendChild(child);
+      var canvas_child = document.createElement("canvas");
+      canvas_child.setAttribute("class", "canvas_box");
+      canvas_child.width  = win_width;
+      canvas_child.height = win_height;
+      canvas_child.addEventListener("mousedown" , mouse_down    , false);
+      canvas_child.addEventListener("mouseup"   , mouse_up      , false);
+      canvas_child.addEventListener("mousemove" , get_image_info, false);
+      pdiv.appendChild(canvas_child);
 
       // add new img
-      var new_img = document.createElement("img");
-      new_img.classList.add("imgClass");
-      img_div.appendChild(new_img);
+      var img_child = document.createElement("img");
+      img_child.classList.add("imgClass");
+      img_div.appendChild(img_child);
 
       draw_canvas_image();
     }
@@ -173,16 +169,25 @@ function get_image_info(e) {
   var offsetX = canvas.getBoundingClientRect().left;
   var offsetY = canvas.getBoundingClientRect().top;
 
+  var canvas_child = pdiv.getElementsByClassName("canvas_box");
+
+  var img_child = img_div.getElementsByClassName("imgClass");
+  var canvas_num_x = Math.floor(e.clientX / win_width );
+  // var canvas_num_y = Math.floor(e.clientY / win_height);
+
   var x = e.clientX - offsetX;
   var y = e.clientY - offsetY;
 
-  var posx = Math.floor(Math.min(Math.max((x/size - objX) , 0), img.width ))
-  var posy = Math.floor(Math.min(Math.max((y/size - objY) , 0), img.height))
+  var show_x = e.clientX - win_width * canvas_num_x - offsetX;
+  var show_y = y;
+
+  var posx = Math.floor(Math.min(Math.max((show_x/size - objX), 0), img_child[canvas_num_x].width ))
+  var posy = Math.floor(Math.min(Math.max((show_y/size - objY), 0), img_child[canvas_num_x].height))
 
   pos_txt.textContent = "X: " + String(posx) + " Y: " + String(posy);
 
-  var ctx = canvas.getContext("2d");
-  var getImageData = ctx.getImageData(x, y, 1, 1);
+  var ctx = canvas_child[canvas_num_x].getContext("2d");
+  var getImageData = ctx.getImageData(show_x, show_y, 1, 1);
   var R = getImageData.data[0]
   var G = getImageData.data[1]
   var B = getImageData.data[2]
