@@ -23,20 +23,25 @@ canvas.addEventListener("mousedown" , mouse_down    , false);
 canvas.addEventListener("mouseup"   , mouse_up      , false);
 canvas.addEventListener("mousemove" , get_image_info, false);
 // button
-button.addEventListener("mousedown", cmp_image_down,false);
-button.addEventListener("mouseup"  , cmp_image_up  ,false);
-button.addEventListener("mouseover", cmp_image_over,false);
-button.addEventListener("mouseout" , cmp_image_out ,false);
+button.addEventListener("mousedown", cmp_image_down, false);
+button.addEventListener("mouseup"  , cmp_image_up  , false);
+button.addEventListener("mouseover", cmp_image_over, false);
+button.addEventListener("mouseout" , cmp_image_out , false);
 button.style.opacity = 0.5;
 
 // window //////////////////////////////////////////////////////////////////////
 window.addEventListener("resize", function(e) {
   clearTimeout(timeoutID)
-  
+
   timeoutID = setTimeout( function() {
     var child_num = pdiv.childElementCount;
     win_width  = window.innerWidth  / child_num;
     draw_canvas_image();
+
+    var button_child = document.getElementsByClassName("cmp_button");
+    for (var i = 0; i < child_num; i++) {
+      button_child[i].style.left = String(win_width * i) + "px";
+    }
   }, 100);
 } , false);
 
@@ -122,6 +127,11 @@ function key_press(e) {
       var canvas_child = document.getElementsByClassName("canvas_box");
       pdiv.removeChild(canvas_child[1]);
 
+      // remove canvas
+      var bdiv = document.getElementById("button_div");
+      var button_child = document.getElementsByClassName("cmp_button");
+      bdiv.removeChild(button_child[1]);
+
       win_width  = innerWidth;
       draw_canvas_image();
     }
@@ -129,7 +139,6 @@ function key_press(e) {
 
   if (e.keyCode == 113) {
     if (pdiv.childElementCount == 1) {
-      console.log("add new canvas")
       // set win size
       win_width  = innerWidth  / 2;
 
@@ -147,6 +156,22 @@ function key_press(e) {
       var img_child = document.createElement("img");
       img_child.classList.add("imgClass");
       img_div.appendChild(img_child);
+
+      // add new button
+      var bdiv = document.getElementById("button_div");
+      var new_button = document.createElement("input");
+      new_button.setAttribute("type", "button");
+      new_button.setAttribute("value", "compare");
+      new_button.setAttribute("class", "cmp_button");
+      new_button.setAttribute("data-index", "1");
+      new_button.addEventListener("mousedown", cmp_image_down, false);
+      new_button.addEventListener("mouseup"  , cmp_image_up  , false);
+      new_button.addEventListener("mouseover", cmp_image_over, false);
+      new_button.addEventListener("mouseout" , cmp_image_out , false);
+      new_button.style.position = "absolute";
+      new_button.style.left = String(win_width) + "px";
+      new_button.style.opacity = 0.5;
+      bdiv.appendChild(new_button);
 
       draw_canvas_image();
     }
@@ -211,29 +236,37 @@ function get_image_info(e) {
 }
 
 function cmp_image_up() {
-  img_num = img_div.childElementCount;
+  img_num   = img_div.childElementCount;
   img_child = img_div.getElementsByClassName("imgClass");
 
-  if (img_num == 2) {
-    img_child[1].src = img_tmp_ary[1];
-    draw_canvas_image();
+  for (var i = 0; i < img_num; i++) {
+    img_child[i].src = img_tmp_ary[i];
   }
+  draw_canvas_image();
 }
 
 function cmp_image_down() {
-  img_num = img_div.childElementCount;
+  var bnum = event.currentTarget.dataset["index"];
+
+  img_num   = img_div.childElementCount;
   img_child = img_div.getElementsByClassName("imgClass");
 
-  if (img_num == 2) {
-    img_child[1].src = img_tmp_ary[0];
-    draw_canvas_image();
+  for (var i = 0; i < img_num; i++) {
+    img_child[i].src = img_tmp_ary[bnum];
   }
+  draw_canvas_image();
 }
 
 function cmp_image_over() {
-  button.style.opacity = 1.0;
+  var bnum = event.currentTarget.dataset["index"];
+  var bdiv = document.getElementById("button_div");
+  var button_child = bdiv.getElementsByClassName("cmp_button");
+  button_child[bnum].style.opacity = 1.0;
 }
 
 function cmp_image_out() {
-  button.style.opacity = 0.5;
+  var bnum = event.currentTarget.dataset["index"];
+  var bdiv = document.getElementById("button_div");
+  var button_child = bdiv.getElementsByClassName("cmp_button");
+  button_child[bnum].style.opacity = 0.5;
 }
