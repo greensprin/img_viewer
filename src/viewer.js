@@ -4,6 +4,7 @@ var canvas   = document.getElementById("mycanvas");
 var zoom_txt = document.getElementById("zoom_txt");
 var pos_txt  = document.getElementById("pos_txt");
 var col_txt  = document.getElementById("col_txt");
+var button   = document.getElementById("btn1");
 
 // create Element //////////////////////////////////////////////////////////////
 var img = document.createElement("img");
@@ -21,6 +22,12 @@ document.addEventListener("keydown", key_press, false);
 canvas.addEventListener("mousedown" , mouse_down    , false);
 canvas.addEventListener("mouseup"   , mouse_up      , false);
 canvas.addEventListener("mousemove" , get_image_info, false);
+// button
+button.addEventListener("mousedown", cmp_image_down,false);
+button.addEventListener("mouseup"  , cmp_image_up  ,false);
+button.addEventListener("mouseover", cmp_image_over,false);
+button.addEventListener("mouseout" , cmp_image_out ,false);
+button.style.opacity = 0.5;
 
 // window //////////////////////////////////////////////////////////////////////
 window.addEventListener("resize", function(e) {
@@ -42,6 +49,7 @@ var relX, relY;
 var timeoutID;
 var win_width  = window.innerWidth;
 var win_height = window.innerHeight;
+var img_tmp_ary = ["", ""];
 
 // function ////////////////////////////////////////////////////////////////////
 function doc_drop(e) {
@@ -53,6 +61,7 @@ function doc_drop(e) {
   var img_index = Math.floor(x / win_width);
 
   img_child[img_index].src = e.dataTransfer.files[0].path;
+  img_tmp_ary[img_index]   = e.dataTransfer.files[0].path;
 
   // img.src = e.dataTransfer.files[0].path
 
@@ -66,7 +75,7 @@ function doc_drop(e) {
 function draw_canvas_image() {
   var num = pdiv.childElementCount;
   canvas_child = pdiv.getElementsByClassName("canvas_box");
-  img_child   = img_div.getElementsByClassName("imgClass");
+  img_child    = img_div.getElementsByClassName("imgClass");
   for (var i = 0; i < num; i++) {
     canvas_child[i].width  = win_width;
     canvas_child[i].height = win_height;
@@ -199,4 +208,32 @@ function get_image_info(e) {
     objY = (y/size) + relY;
     draw_canvas_image();
   }
+}
+
+function cmp_image_up() {
+  img_num = img_div.childElementCount;
+  img_child = img_div.getElementsByClassName("imgClass");
+
+  if (img_num == 2) {
+    img_child[1].src = img_tmp_ary[1];
+    draw_canvas_image();
+  }
+}
+
+function cmp_image_down() {
+  img_num = img_div.childElementCount;
+  img_child = img_div.getElementsByClassName("imgClass");
+
+  if (img_num == 2) {
+    img_child[1].src = img_tmp_ary[0];
+    draw_canvas_image();
+  }
+}
+
+function cmp_image_over() {
+  button.style.opacity = 1.0;
+}
+
+function cmp_image_out() {
+  button.style.opacity = 0.5;
 }
