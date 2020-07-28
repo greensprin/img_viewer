@@ -102,15 +102,20 @@ function draw_canvas_image() {
   var dc_child  = dc_div.getElementsByClassName("canvasData");
 
   for (var i = 0; i < num; i++) {
-    canvas_child[i].width  = win_width;
-    canvas_child[i].height = win_height;
-    var ctx = canvas_child[i].getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0,0,canvas_child[i].width,canvas_child[i].height);
-    ctx.scale(size, size);
-    // ctx.drawImage(img_child[i], objX, objY);
-    ctx.drawImage(dc_child[i], objX, objY);
-    ctx.scale(1/size, 1/size);
+    var width = dc_child[i].width;
+    var height = dc_child[i].height;
+
+    if (width * height != 0) {
+      canvas_child[i].width  = win_width;
+      canvas_child[i].height = win_height;
+      var ctx = canvas_child[i].getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0,0,canvas_child[i].width,canvas_child[i].height);
+      ctx.scale(size, size);
+      // ctx.drawImage(img_child[i], objX, objY);
+      ctx.drawImage(dc_child[i], objX, objY);
+      ctx.scale(1/size, 1/size);
+    }
   }
 }
 
@@ -331,24 +336,26 @@ function shift_data() {
     var width = dc_child[i].width;
     var height = dc_child[i].height;
 
-    var ctx = dc_child[i].getContext("2d");
-    var img_data = ctx.getImageData(0, 0, width, height);
+    if (width * height != 0) {
+      var ctx = dc_child[i].getContext("2d");
+      var img_data = ctx.getImageData(0, 0, width, height);
 
-    if (shift >= 0) {
-      for (var xy = 0; xy < width * height * 4; xy+=4) {
-        img_data.data[xy+0] = img_data.data[xy+0] << shift;
-        img_data.data[xy+1] = img_data.data[xy+1] << shift;
-        img_data.data[xy+2] = img_data.data[xy+2] << shift;
+      if (shift >= 0) {
+        for (var xy = 0; xy < width * height * 4; xy+=4) {
+          img_data.data[xy+0] = img_data.data[xy+0] << shift;
+          img_data.data[xy+1] = img_data.data[xy+1] << shift;
+          img_data.data[xy+2] = img_data.data[xy+2] << shift;
+        }
+      } else {
+        for (var xy = 0; xy < width * height * 4; xy+=4) {
+          img_data.data[xy+0] = img_data.data[xy+0] >> Math.abs(shift);
+          img_data.data[xy+1] = img_data.data[xy+1] >> Math.abs(shift);
+          img_data.data[xy+2] = img_data.data[xy+2] >> Math.abs(shift);
+        }
       }
-    } else {
-      for (var xy = 0; xy < width * height * 4; xy+=4) {
-        img_data.data[xy+0] = img_data.data[xy+0] >> Math.abs(shift);
-        img_data.data[xy+1] = img_data.data[xy+1] >> Math.abs(shift);
-        img_data.data[xy+2] = img_data.data[xy+2] >> Math.abs(shift);
-      }
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.putImageData(img_data, 0, 0);
     }
-
-    ctx.clearRect(0, 0, width, height);
-    ctx.putImageData(img_data, 0, 0);
   }
 }
