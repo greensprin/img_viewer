@@ -1,0 +1,38 @@
+{
+  "name": "img_viewer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^9.1.0",
+    "electron-builder": "^22.7.0",
+    "electron-packager": "^15.0.0",
+    "python-shell": "^2.0.1"
+  },
+  "scripts": {
+    "start": "npx electron src",
+    "build": "npx electron-packager src img-viewer --platform=win32 --arch=x64 --electron-version=9.1.0",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "build": {
+    "appId": "com.electron.viewer",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src",
+      "src/package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
