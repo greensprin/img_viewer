@@ -308,9 +308,14 @@ function cmp_image_down() {
   img_num   = img_div.childElementCount;
   img_child = img_div.getElementsByClassName("imgClass");
 
-  for (var i = 0; i < img_num; i++) {
-    img_child[i].src = img_tmp_ary[bnum];
+  if (event.button == 0) {
+    for (var i = 0; i < img_num; i++) {
+      img_child[i].src = img_tmp_ary[bnum];
+    }
+  } else if (event.button == 2) {
+      diff_img(bnum);
   }
+
   draw_canvas_image();
 }
 
@@ -356,6 +361,35 @@ function shift_data() {
 
       ctx.clearRect(0, 0, width, height);
       ctx.putImageData(img_data, 0, 0);
+    }
+  }
+}
+
+function diff_img(bnum) {
+  var num = dc_div.childElementCount;
+  var dc_child = dc_div.getElementsByClassName("canvasData");
+
+  if (num != 1) {
+    var width  = dc_child[bnum].width;
+    var height = dc_child[bnum].height;
+
+    if (width * height != 0) {
+      var ctx1 = dc_child[bnum].getContext("2d");
+      var img_data1 = ctx1.getImageData(0, 0, width, height);
+
+      var tag_num = 0;
+      if (bnum == 0) tag_num = 1;
+      var ctx2 = dc_child[tag_num].getContext("2d");
+      var img_data2 = ctx2.getImageData(0, 0, width, height);
+
+      for (var xy = 0; xy < width * height * 4; xy+=4) {
+        img_data2.data[xy+0] = (img_data2.data[xy+0] - img_data1.data[xy+0]) * 16 + 128;
+        img_data2.data[xy+1] = (img_data2.data[xy+1] - img_data1.data[xy+1]) * 16 + 128;
+        img_data2.data[xy+2] = (img_data2.data[xy+2] - img_data1.data[xy+2]) * 16 + 128;
+      }
+
+      ctx2.clearRect(0, 0, width, height);
+      ctx2.putImageData(img_data2, 0, 0);
     }
   }
 }
